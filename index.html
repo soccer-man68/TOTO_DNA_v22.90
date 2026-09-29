@@ -1,0 +1,1240 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes">
+    <title>TOTO_DNA v22.90 Mobile Quant & Vaccine Edition</title>
+    <!-- 💡 엑셀 셀 배경색(Fill Style) 완벽 추출을 위한 ExcelJS 라이브러리 CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.3.0/exceljs.min.js"></script>
+    <style>
+        :root { 
+            --bg: #2c3e50; --green: #27ae60; --purple: #8e44ad; --yellow: #f1c40f; 
+            --red: #e74c3c; --dark: #1e272e; --blue: #2980b9; --orange: #f39c12;
+            --teal: #16a085;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: -apple-system, BlinkMacSystemFont, "Malgun Gothic", "Apple SD Gothic Neo", sans-serif; }
+        body { background: #f4f7f6; font-size: 13px; line-height: 1.4; padding-bottom: 50px; }
+        
+        /* 모바일 최적화 헤더 */
+        header { background: var(--bg); color: white; padding: 10px 14px; position: sticky; top: 0; z-index: 1000; box-shadow: 0 2px 5px rgba(0,0,0,0.2); }
+        .logo { font-size: 1.15rem; font-weight: bold; color: var(--yellow); margin-bottom: 6px; display: flex; justify-content: space-between; align-items: center; }
+        .header-btns { display: flex; gap: 6px; }
+        .btn { padding: 8px 12px; border: none; border-radius: 5px; color: white; font-weight: bold; font-size: 12px; cursor: pointer; white-space: nowrap; }
+        
+        /* 가로 스크롤 8대 탭 바 */
+        .tabs { display: flex; background: #34495e; overflow-x: auto; position: sticky; top: 76px; z-index: 999; -webkit-overflow-scrolling: touch; }
+        .tabs::-webkit-scrollbar { display: none; }
+        .tab { padding: 10px 12px; cursor: pointer; color: #bdc3c7; white-space: nowrap; font-weight: bold; border-right: 1px solid #444; text-align: center; font-size: 11px; }
+        .tab.active { background: white; color: var(--bg); border-bottom: 3px solid var(--yellow); }
+        
+        .content-area { display: none; padding: 8px 4px; min-height: calc(100vh - 160px); }
+        .content-area.active { display: block; }
+        
+        .table-wrapper { overflow-x: auto; background: white; border-radius: 6px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); -webkit-overflow-scrolling: touch; }
+        table { width: 100%; border-collapse: collapse; white-space: nowrap; font-size: 12px; text-align: center; }
+        th { background: #34495e; color: white; padding: 8px 4px; font-size: 11px; position: sticky; top: 0; z-index: 10; cursor: pointer; user-select: none; }
+        td { border: 1px solid #dfe6e9; padding: 8px 4px; vertical-align: middle; user-select: text; -webkit-user-select: text; }
+        
+        /* 뱃지 및 카드 */
+        .badge { display: inline-block; padding: 3px 6px; border-radius: 3px; font-size: 10px; font-weight: bold; color: white; }
+        .badge-green { background: var(--green); }
+        .badge-purple { background: var(--purple); }
+        .badge-orange { background: var(--orange); }
+        .badge-red { background: var(--red); }
+        .badge-gray { background: #7f8c8d; }
+        .badge-teal { background: var(--teal); }
+
+        .smp-league { background: #6c5ce7; color: white; padding: 2px 4px; border-radius: 3px; font-size: 10px; }
+        .feedback-text { white-space: normal; text-align: left; min-width: 150px; line-height: 1.3; background: #fdf2e9; padding: 5px; border-left: 3px solid #e67e22; border-radius: 3px; font-size: 11px; }
+        
+        /* 티어 카드 */
+        .tier-card { border-left: 5px solid var(--blue); background: #2d3436; padding: 14px; margin: 10px 4px; color: #ecf0f1; border-radius: 8px; }
+        .tier-title { color: var(--yellow); font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; }
+        .combo-box { border-top: 1px solid #444; padding-top: 8px; margin-top: 8px; font-size: 12px; line-height: 1.5; background:#1e272e; border-radius:6px; padding:10px; }
+        
+        .ctrl-box { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: white; border-radius: 6px; }
+        .btn-action { padding: 8px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; border: none; color: white; cursor: pointer; }
+        select { padding: 6px 10px; font-size: 12px; font-weight: bold; border-radius: 4px; border: 1px solid #ccc; background: white; }
+
+        /* 💡 보안 비밀번호 4938 모달 */
+        #password-overlay { position: fixed; inset: 0; background: var(--bg); display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 10001; }
+        #pw-input { padding: 12px; font-size: 1.2rem; width: 200px; border-radius: 8px; border: 2px solid #34495e; margin-bottom: 15px; text-align: center; outline: none; }
+        
+        #modal { display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); width: 92%; background:white; z-index:2000; padding:18px; border-radius:12px; max-height: 85vh; overflow-y: auto; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
+        .overlay { display:none; position:fixed; inset:0; background:rgba(0,0,0,0.8); z-index:1999; }
+    </style>
+</head>
+<body>
+
+    <!-- 🔒 1. 패스워드 보안창 (암호: 4938) -->
+    <div id="password-overlay">
+        <h2 style="color:white; margin-bottom: 8px; text-align: center;">TOTO_DNA v22.90<br><span style="font-size: 0.85rem; color: var(--yellow);">Mobile Quant & Vaccine Edition</span></h2>
+        <p style="color:#bdc3c7; margin-bottom: 15px; font-size: 0.9rem;">접속 보안 패스워드 입력</p>
+        <input type="password" id="pw-input" placeholder="Password" autofocus>
+        <button class="btn" style="background:var(--green); width:200px; height: 44px; font-size:14px;" onclick="checkPw()">시스템 접속</button>
+    </div>
+
+    <!-- 2. 모바일 메인 헤더 -->
+    <header>
+        <div class="logo">
+            <span>⚡ TOTO_DNA v22.90</span>
+            <span id="match-count-badge" style="font-size:11px; color:#ecf0f1; font-weight:normal;">대기 중</span>
+        </div>
+        <div class="header-btns">
+            <button class="btn" style="background:var(--green);" onclick="document.getElementById('file-input').click()">📂 엑셀 로드</button>
+            <button class="btn" style="background:var(--purple);" onclick="runSimulation()">🧪 시뮬</button>
+        </div>
+        <div id="status" style="width:100%; font-size:11px; color:var(--yellow); margin-top: 4px;">엑셀 파일을 선택해주세요.</div>
+        <input type="file" id="file-input" style="display:none" accept=".xlsx">
+    </header>
+
+    <!-- 3. 가로 스크롤 8대 탭 바 -->
+    <div class="tabs">
+        <div class="tab active" onclick="switchTab(0)">📊 전체/색상</div>
+        <div class="tab" onclick="switchTab(1)">🎯 승무패</div>
+        <div class="tab" onclick="switchTab(2)">✅ 맞춤체크</div>
+        <div class="tab" onclick="switchTab(3)">🚀 티어조합</div>
+        <div class="tab" onclick="switchTab(4)">📈 오즈내재배당</div>
+        <div class="tab" onclick="switchTab(5)">🧠 ML 기댓값</div>
+        <div class="tab" onclick="switchTab(6)">📋 실적검증</div>
+        <div class="tab" onclick="switchTab(7)">💉 실전정밀(백신)</div>
+    </div>
+
+    <!-- TAB 0: 전체 색상 & 오답 -->
+    <div id="tab0" class="content-area active">
+        <div class="ctrl-box">
+            <span>📊 전체 경기 대진 및 색상 패턴 (헤더 터치 시 정렬/원복)</span>
+            <button class="btn-action" style="background:#34495e;" onclick="copyTable('list-main')">📋 표 복사</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead>
+                    <tr><th onclick="sortTable(0, 0)">리그/시간</th><th onclick="sortTable(0, 1)">대진</th><th onclick="sortTable(0, 2)">일반배당 (색상)</th><th onclick="sortTable(0, 3)">핸디배당 (색상)</th><th onclick="sortTable(0, 4)">1차 AI</th><th onclick="sortTable(0, 5)">🧠 오답노트</th><th onclick="sortTable(0, 6)">🎯 최종 결론</th></tr>
+                </thead>
+                <tbody id="list-main"><tr><td colspan="7" style="padding:30px; color:gray;">엑셀을 로드해주세요.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 1: 승무패오답 -->
+    <div id="tab1" class="content-area">
+        <div class="ctrl-box">
+            <span>🎯 토토 승무패 14경기 분석표</span>
+            <button class="btn-action" style="background:#34495e;" onclick="copyTable('list-wdl')">📋 표 복사</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th onclick="sortTable(1, 0)">14경기 대진</th><th onclick="sortTable(1, 1)">1차 분석</th><th onclick="sortTable(1, 2)">🧠 오답 검증</th><th onclick="sortTable(1, 3)">🎯 최종 마킹</th></tr></thead>
+                <tbody id="list-wdl"><tr><td colspan="4" style="padding:30px; color:gray;">승무패 경기가 없습니다.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 2: 맞춤체크 (💡 8번 탭 실전 정밀 판별 엔진과 100% 동기화) -->
+    <div id="tab2" class="content-area">
+        <div class="ctrl-box">
+            <select id="customTarget">
+                <option value="일반승">일반승</option>
+                <option value="일반무">일반무</option>
+                <option value="일반패">일반패</option>
+                <option value="핸디승">핸디승</option>
+                <option value="핸디무">핸디무</option>
+                <option value="핸디패">핸디패</option>
+            </select>
+            <button class="btn-action" style="background:#2980b9;" onclick="runCheckRecommendation()">🔍 정밀 타겟 검색</button>
+            <button class="btn-action" style="background:#34495e;" onclick="copyTable('list-check')">📋 표 복사</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>시간/리그</th><th>경기 대진</th><th>🎯 정밀 판별 추천 (사유/배당)</th><th>💉 4대 체크 & 오답 백신 종합 진단</th></tr></thead>
+                <tbody id="list-check"><tr><td colspan="4" style="padding:30px; color:gray;">정밀 타겟 검색을 실행하세요.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 3: 티어오답 -->
+    <div id="tab3" class="content-area" style="background:var(--dark);">
+        <div id="tier-results" style="padding-top:6px;"></div>
+    </div>
+
+    <!-- TAB 4: 오즈내재배당분석 -->
+    <div id="tab4" class="content-area">
+        <div class="ctrl-box">
+            <span>📈 <b>평가 헤더 터치:</b> 과다끼리 ▲ ➔ 정상끼리 ▼ ➔ 원래대로 원복!</span>
+            <button class="btn-action" style="background:#34495e;" onclick="copyTable('list-margin')">📋 표 복사</button>
+        </div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th onclick="sortTable(4, 0)">리그/시간</th><th onclick="sortTable(4, 1)">대진</th><th onclick="sortTable(4, 2)">일반배당</th><th onclick="sortTable(4, 3)">내재확률</th><th onclick="sortTable(4, 4)">오즈마진</th><th onclick="sortTable(4, 5)">평가 (정상/과다)</th></tr></thead>
+                <tbody id="list-margin"><tr><td colspan="6" style="padding:30px; color:gray;">데이터를 로드해주세요.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 5: ML 기댓값 -->
+    <div id="tab5" class="content-area">
+        <div class="ctrl-box">
+            <button class="btn-action" style="background:#d35400;" onclick="trainAndPredictML()">🧠 브라우저 ML 모델 생성 (피처 고도화)</button>
+            <select id="mlFilter" onchange="renderMLTable()">
+                <option value="ALL">전체 보기</option>
+                <option value="VALUE">💎 +EV 가치베팅만</option>
+                <option value="UPSET">🔥 역배/무승부 이변만</option>
+            </select>
+            <button class="btn-action" style="background:#34495e;" onclick="copyTable('list-ml')">📋 표 복사</button>
+        </div>
+        <div id="ml-status-text" style="font-size:11px; font-weight:bold; margin-bottom:6px; color:#2c3e50;">과거 데이터를 즉시 학습하여 기댓값(EV)을 산출합니다.</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>대진</th><th>일반배당</th><th>ML예측확률</th><th>기댓값(EV)</th><th>AI 판정</th></tr></thead>
+                <tbody id="list-ml"><tr><td colspan="5" style="padding:30px; color:gray;">ML 학습을 실행하세요.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 6: 실적 비교 & 적중 검증 -->
+    <div id="tab6" class="content-area">
+        <div class="ctrl-box">
+            <button class="btn-action" style="background:#2980b9;" onclick="verifyResultsFromClipboard()">📋 클립보드 실적 검증</button>
+            <button class="btn-action" style="background:#34495e;" onclick="openManualPasteDialog()">📝 직접 입력</button>
+            <button class="btn-action" style="background:#d35400;" onclick="copyVerificationToClipboard()">📄 검증 결과 전체 복사</button>
+        </div>
+        <div id="verify-summary-bar" style="font-size:11px; font-weight:bold; margin-bottom:6px; color:#2c3e50;">웹사이트 실적 복사(Ctrl+C) 후 위 버튼을 누르세요.</div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>대진</th><th>실제 결과</th><th>1차 AI</th><th>오답노트</th><th>판정</th><th>승무패</th><th>🔍 오답 원인 정밀 부검</th></tr></thead>
+                <tbody id="list-verify"><tr><td colspan="7" style="padding:30px; color:gray;">실적을 대조해주세요.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- TAB 7: 실전 정밀 판별 & 💉 실시간 오답 백신 엔진 -->
+    <div id="tab7" class="content-area">
+        <div class="ctrl-box">
+            <select id="judgeFilter" onchange="renderPrecisionJudgment()">
+                <option value="KEY">⭐ 실전 핵심 추천</option>
+                <option value="TRUE_FAV">🏆 알짜 꿀정배</option>
+                <option value="TRAP">🚨 정배 함정(플핸)</option>
+                <option value="DRAW_TIGHT">⚖️ 무승부 지뢰</option>
+                <option value="SMP">🎯 승무패 14 적중표</option>
+                <option value="ALL">👁️ 전체 경기</option>
+            </select>
+            <button class="btn-action" style="background:#16a085;" onclick="renderPrecisionJudgment()">🔄 판별 갱신</button>
+            <button class="btn-action" style="background:#34495e;" onclick="copyTable('list-judge')">📋 표 복사</button>
+        </div>
+        <div id="judge-summary-bar" style="font-size:11px; font-weight:bold; margin-bottom:6px; color:#2c3e50;"></div>
+        <div class="table-wrapper">
+            <table>
+                <thead><tr><th>리그/시간</th><th>대진</th><th>마진/내재확률</th><th>4대 체크 + 💉오답 백신</th><th>🎯 최종 판별</th><th>💡 실전 배팅 가이드</th></tr></thead>
+                <tbody id="list-judge"><tr><td colspan="6" style="padding:30px; color:gray;">데이터를 로드해주세요.</td></tr></tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- 상세 브리핑 모달 -->
+    <div class="overlay" onclick="closeModal()"></div>
+    <div id="modal">
+        <h3 style="margin-top:0; color:var(--bg); border-bottom:2px solid var(--green); padding-bottom:8px; font-size: 1.1rem;">🔍 상세 브리핑</h3>
+        <div id="m-content" style="white-space: pre-wrap; font-size: 12px; line-height: 1.5; color:#333; margin-top:8px;"></div>
+        <button class="btn" style="background:var(--bg); width:100%; margin-top:12px; height: 40px;" onclick="closeModal()">닫기</button>
+    </div>
+
+    <script>
+        let normalBgColor = null, pastData = [], upcomingData = [], caches = { lvl1: {}, lvl2: {}, lvl3: {} }, teamHistory = {};
+        let globalRuleStats = {}, historicalErrorArchive = [], judgeResultsMap = {}, mlResults = [], lastClipboardReport = "";
+        
+        const tableDataCache = {};
+        const sortStates = {};
+
+        // 🔒 패스워드 4938 검증
+        function checkPw() {
+            if (document.getElementById('pw-input').value === "4938") {
+                document.getElementById('password-overlay').style.display = 'none';
+            } else {
+                alert("접속 암호가 틀렸습니다.");
+                document.getElementById('pw-input').value = "";
+            }
+        }
+        document.getElementById('pw-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPw(); });
+
+        function switchTab(idx) {
+            document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
+            document.querySelectorAll('.content-area').forEach((c, i) => c.classList.toggle('active', i === idx));
+        }
+
+        // =========================================================================
+        // 💡 ExcelJS 기반 셀 배경색 추출 (윈도우 openpyxl과 100% 동일)
+        // =========================================================================
+        function getColorKey(cell) {
+            if (!cell || !cell.fill || !cell.fill.fgColor) return "NO_FILL";
+            const fg = cell.fill.fgColor;
+            return fg.argb ? "R" + fg.argb : (fg.theme !== undefined ? "T" + fg.theme + "_" + (fg.tint || 0) : "NO_FILL");
+        }
+
+        function getCombinations(array, size) {
+            const result = [];
+            function backtrack(start, combo) {
+                if (combo.length === size) { result.push([...combo]); return; }
+                for (let i = start; i < array.length; i++) { combo.push(array[i]); backtrack(i + 1, combo); combo.pop(); }
+            }
+            backtrack(0, []); return result;
+        }
+
+        document.getElementById('file-input').addEventListener('change', async function(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            document.getElementById('status').innerText = "⚙️ 엑셀 및 오답 백신 지문 분석 중...";
+
+            try {
+                const workbook = new ExcelJS.Workbook();
+                await workbook.xlsx.load(file);
+                const ws = workbook.getWorksheet('일반핸디') || workbook.worksheets[0];
+
+                const colorCounts = {};
+                for (let i = 2; i <= 100; i++) {
+                    const c = getColorKey(ws.getRow(i).getCell(8));
+                    if (c !== "NO_FILL") colorCounts[c] = (colorCounts[c] || 0) + 1;
+                }
+                normalBgColor = Object.keys(colorCounts).reduce((a, b) => colorCounts[a] > colorCounts[b] ? a : b, "NO_FILL");
+
+                pastData = []; upcomingData = []; teamHistory = {};
+                caches = { lvl1: {}, lvl2: {}, lvl3: {} };
+
+                ws.eachRow((row, rowNumber) => {
+                    if (rowNumber < 2) return;
+                    const league = row.getCell(3).value;
+                    if (!league) return;
+
+                    const getPat = (cols) => {
+                        let p = [];
+                        cols.forEach((cIdx, i) => {
+                            const cell = row.getCell(cIdx);
+                            const cKey = getColorKey(cell);
+                            if (cKey !== normalBgColor && cKey !== "NO_FILL") p.push(["승","무","패"][i]);
+                        });
+                        return p;
+                    };
+
+                    const safeFloat = (v) => { try { return v ? Number(v.result || v.value || v) : 0; } catch(e) { return 0; } };
+
+                    const cColor = getColorKey(row.getCell(3));
+                    const isSmpGame = (cColor !== "NO_FILL" && cColor !== normalBgColor);
+
+                    const m = {
+                        time: String(row.getCell(2).value || "").substring(5, 16),
+                        league: String(league).trim(),
+                        home: String(row.getCell(4).value || "").trim(),
+                        away: String(row.getCell(6).value || "").trim(),
+                        gOdds: [safeFloat(row.getCell(8).value), safeFloat(row.getCell(9).value), safeFloat(row.getCell(10).value)],
+                        handi: String(row.getCell(15).value || "").trim(),
+                        hOdds: [safeFloat(row.getCell(16).value), safeFloat(row.getCell(17).value), safeFloat(row.getCell(18).value)],
+                        gPat: getPat([8, 9, 10]),
+                        hPat: getPat([16, 17, 18]),
+                        genRes: String(row.getCell(11).value || "").trim(),
+                        hanRes: String(row.getCell(19).value || "").trim(),
+                        isSmp: isSmpGame
+                    };
+
+                    if (!m.genRes || m.genRes === "None" || m.genRes === "null" || m.genRes === "undefined" || m.genRes === "") {
+                        upcomingData.push(m);
+                    } else {
+                        pastData.push(m);
+                        const resKey = `${m.genRes}_${m.hanRes}`;
+                        const k1 = `${m.league}_${m.handi}_${m.gPat.join("")}`, k2 = `${m.league}_${m.gPat.join("")}`, k3 = `${m.gPat.join("")}_${m.hPat.join("")}`;
+                        [ [caches.lvl1, k1], [caches.lvl2, k2], [caches.lvl3, k3] ].forEach(([cache, k]) => {
+                            if (!cache[k]) cache[k] = {};
+                            cache[k][resKey] = (cache[k][resKey] || 0) + 1;
+                        });
+                        if (!teamHistory[m.home]) teamHistory[m.home] = [];
+                        if (!teamHistory[m.away]) teamHistory[m.away] = [];
+                        teamHistory[m.home].push(m.genRes);
+                        const rev = { "승":"패", "패":"승", "무":"무" };
+                        teamHistory[m.away].push(rev[m.genRes] || "무");
+                    }
+                });
+
+                buildGlobalRuleStats();
+                buildHistoricalErrorArchive();
+                renderAllTabs();
+                generateTierCombos();
+                renderPrecisionJudgment();
+                runCheckRecommendation(); // 3번 탭 자동 갱신
+
+                const smpCount = upcomingData.filter(m => m.isSmp).length;
+                document.getElementById('status').innerText = `✅ 완료: 과거 ${pastData.length}건 (오답 ${historicalErrorArchive.length}건 수집) / 예정 ${upcomingData.length}건 (승무패 ${smpCount})`;
+                document.getElementById('match-count-badge').innerText = `예정 ${upcomingData.length}경기`;
+            } catch (err) {
+                alert("엑셀 로드 오류: " + err.message);
+                document.getElementById('status').innerText = "❌ 오류 발생";
+            }
+        });
+
+        function buildHistoricalErrorArchive() {
+            historicalErrorArchive = [];
+            const scanPool = pastData.length >= 3000 ? pastData.slice(-3000) : pastData;
+
+            scanPool.forEach(m => {
+                const cData = getColorSpecificAI(m);
+                if (!cData || !cData.allCandidates) return;
+                const trapData = (cData.allCandidates.length >= 2) ? getTrapAvoidancePick(m, cData.bestPick, cData.allCandidates) : null;
+                const predPick = trapData ? trapData.finalPick : cData.bestPick;
+
+                if (!predPick || !predPick.res) return;
+
+                let isHit = false;
+                if (predPick.type === '일반' && predPick.res === m.genRes) isHit = true;
+                else if (predPick.type === '핸디' && predPick.res === m.hanRes) isHit = true;
+
+                if (!isHit) historicalErrorArchive.push(m);
+            });
+        }
+
+        function getTrapVaccineDiagnosis(m, favOdds, isHFav, normPD, hoH, hoD, hoA, favLead) {
+            const lStr = String(m.league || "");
+            const isCup = ['컵', 'FA', '친선', 'INTL', '걸프', '네이션'].some(k => lStr.includes(k));
+
+            if (isHFav && (hoA > 0 && hoA <= 1.62 && hoH >= 2.40)) {
+                return { hasTrap: true, alert: "💉[오답백신] 1골차 핸무 덫! (플핸승 절대주의 / 안방 정배 보호)", blockHandiLoss: true };
+            }
+            if (!isHFav && favOdds >= 1.48 && favOdds <= 1.95) {
+                return { hasTrap: true, alert: "💉[오답백신] 원정 정배 붕괴 덫! (원정 단통 배제 / 안방 저항)" };
+            }
+            if (normPD >= 0.285) {
+                return { hasTrap: true, alert: "💉[오답백신] 무승부 지뢰 덫! (단통 금지 / 투마킹 필수)" };
+            }
+            if (isCup && favOdds <= 1.50 && favLead <= 0.5) {
+                return { hasTrap: true, alert: "💉[오답백신] 컵대회 로테이션 노이즈! (정배 맹신 금지)" };
+            }
+
+            return { hasTrap: false, alert: "💉[오답백신] 정상 안전 구간" };
+        }
+
+        function getMomentumScore(team) {
+            const recent = (teamHistory[team] || []).slice(-6);
+            let score = 0;
+            recent.forEach((res, i) => { const w = (i + 1) * 0.3; if (res === "승") score += 3 * w; else if (res === "무") score += 1 * w; });
+            return { score: Number(score.toFixed(1)), history: recent };
+        }
+
+        function getColorSpecificAI(m) {
+            const candidates = [];
+            m.gPat.forEach(p => candidates.push({ type: '일반', res: p, score: 0, hits: 0 }));
+            m.hPat.forEach(p => candidates.push({ type: '핸디', res: p, score: 0, hits: 0 }));
+            if (candidates.length === 0) return null;
+
+            const k1 = `${m.league}_${m.handi}_${m.gPat.join("")}`, k2 = `${m.league}_${m.gPat.join("")}`, k3 = `${m.gPat.join("")}_${m.hPat.join("")}`;
+            candidates.forEach(cand => {
+                let score = 0, hits = 0;
+                [ [caches.lvl1, 30, k1], [caches.lvl2, 15, k2], [caches.lvl3, 5, k3] ].forEach(([cache, weight, key]) => {
+                    if (cache[key]) {
+                        for (let resKey in cache[key]) {
+                            const splitKey = resKey.split("_"); if (splitKey.length < 2) continue;
+                            const [gRes, hRes] = splitKey, count = cache[key][resKey];
+                            if (cand.type === '일반' && gRes === cand.res) { score += weight * count; hits += count; }
+                            if (cand.type === '핸디' && hRes === cand.res) { score += weight * count; hits += count; }
+                        }
+                    }
+                });
+                cand.score = score; cand.hits = hits;
+            });
+            const sortedCandidates = [...candidates].sort((a, b) => b.score !== a.score ? b.score - a.score : b.hits - a.hits);
+            return { bestPick: sortedCandidates[0].score > 0 ? sortedCandidates[0] : null, allCandidates: candidates };
+        }
+
+        function getPredictionAI(m) {
+            if (m.gPat.length === 0 && m.hPat.length === 0) return { text: "패턴 부족", conf: 0, key: null };
+            let points = {}, totalHits = 0;
+            const k1 = `${m.league}_${m.handi}_${m.gPat.join("")}`, k2 = `${m.league}_${m.gPat.join("")}`, k3 = `${m.gPat.join("")}_${m.hPat.join("")}`;
+            [ [caches.lvl1, 20.0, k1], [caches.lvl2, 10.0, k2], [caches.lvl3, 5.0, k3] ].forEach(([cache, weight, key]) => {
+                if (cache[key]) {
+                    for (let resKey in cache[key]) {
+                        const splitKey = resKey.split("_"); if (splitKey.length < 2) continue;
+                        const [gRes, hRes] = splitKey, count = cache[key][resKey];
+                        totalHits += count;
+                        m.gPat.forEach(p => { if (gRes === p) { const k = `일반[${p}]`; points[k] = (points[k] || 0) + weight * count; } });
+                        m.hPat.forEach(p => { if (hRes === p) { const k = `핸디[${p}]`; points[k] = (points[k] || 0) + weight * count; } });
+                    }
+                }
+            });
+            if (Object.keys(points).length === 0) return { text: "매칭 없음", conf: 0, key: null };
+            
+            const diff = getMomentumScore(m.home).score - getMomentumScore(m.away).score;
+            if (diff >= 5.0 && points["일반[승]"]) points["일반[승]"] *= 1.3;
+            if (diff <= -5.0 && points["일반[패]"]) points["일반[패]"] *= 1.3;
+            
+            const sorted = Object.entries(points).sort((a,b) => b[1] - a[1]), [bestKey, bestVal] = sorted[0], sumPoints = Object.values(points).reduce((a,b) => a+b, 0);
+            let conf = Math.min(100, Math.floor((bestVal / sumPoints) * 70 + Math.min(totalHits, 25) * 1.2));
+            return { text: `${conf >= 82 ? "🔥[강력]" : (conf >= 68 ? "[추천]" : "[일반]")} ${bestKey} (${conf}점)`, key: bestKey, conf: conf, hits: totalHits };
+        }
+
+        function getTrapAvoidancePick(m, bestPick, allCandidates) {
+            if (!bestPick || allCandidates.length < 2) return { finalPick: bestPick, reason: "안정적 픽 유지", ruleId: "NO_TRAP" };
+            const momDiff = getMomentumScore(m.home).score - getMomentumScore(m.away).score;
+            const candDict = {}; allCandidates.forEach(c => candDict[`${c.type}[${c.res}]`] = c);
+            const hasGenWin = candDict["일반[승]"], hasHanLoss = candDict["핸디[패]"];
+            const hasGenLoss = candDict["일반[패]"], hasHanWin = candDict["핸디[승]"];
+
+            if (hasGenWin && hasHanLoss) {
+                const gHits = hasGenWin.hits, hHits = hasHanLoss.hits;
+                if (gHits > 0 || hHits > 0) {
+                    if (Math.abs(gHits - hHits) / Math.max(gHits, hHits) <= 0.25 || hHits > gHits) {
+                        if (momDiff >= 3.0) return { finalPick: hasGenWin, reason: `홈 기세 돌파 (일반승)`, ruleId: "HOME_MOMENTUM_BREAK" };
+                        else if (momDiff >= -1.5 && momDiff <= 1.5) return { finalPick: {type: '일반', res: '무'}, reason: `무승부 낚시 (일반무)`, ruleId: "HOME_DRAW_TRAP" };
+                        else if (momDiff <= -2.0) return { finalPick: {type: '일반', res: '패'}, reason: `이변 원정승 (일반패)`, ruleId: "HOME_UPSET_TRAP" };
+                        else return { finalPick: hasHanLoss, reason: `핸디캡 방어 (핸디패)`, ruleId: "HOME_HANDI_DEFENSE" };
+                    }
+                }
+            }
+            if (hasGenLoss && hasHanWin) {
+                const gHits = hasGenLoss.hits, hHits = hasHanWin.hits;
+                if (gHits > 0 || hHits > 0) {
+                    if (Math.abs(gHits - hHits) / Math.max(gHits, hHits) <= 0.25 || hHits > gHits) {
+                        if (momDiff <= -3.0) return { finalPick: hasGenLoss, reason: `원정 기세 돌파 (일반패)`, ruleId: "AWAY_MOMENTUM_BREAK" };
+                        else if (momDiff >= -1.5 && momDiff <= 1.5) return { finalPick: {type: '일반', res: '무'}, reason: `무승부 낚시 (일반무)`, ruleId: "AWAY_DRAW_TRAP" };
+                        else if (momDiff >= 2.0) return { finalPick: {type: '일반', res: '승'}, reason: `이변 홈승 (일반승)`, ruleId: "AWAY_UPSET_TRAP" };
+                        else return { finalPick: hasHanWin, reason: `핸디캡 방어 (핸디승)`, ruleId: "AWAY_HANDI_DEFENSE" };
+                    }
+                }
+            }
+            return { finalPick: bestPick, reason: "트랩 미발견", ruleId: "NO_TRAP" };
+        }
+
+        function buildGlobalRuleStats() {
+            globalRuleStats = {};
+            const backtestSamples = pastData.slice(-500); 
+            backtestSamples.forEach(m => {
+                const colorData = getColorSpecificAI(m);
+                if (!colorData || !colorData.allCandidates || colorData.allCandidates.length < 2) return;
+                const trap = getTrapAvoidancePick(m, colorData.bestPick, colorData.allCandidates);
+                if (trap.ruleId === "NO_TRAP") return;
+
+                if (!globalRuleStats[trap.ruleId]) globalRuleStats[trap.ruleId] = { total: 0, wrong: 0, actualGen: {} };
+                globalRuleStats[trap.ruleId].total++;
+                
+                const fp = trap.finalPick;
+                if (!fp || typeof fp !== 'object' || !fp.type || !fp.res) return;
+                if (!((fp.type === '일반' && fp.res === m.genRes) || (fp.type === '핸디' && fp.res === m.hanRes))) {
+                    globalRuleStats[trap.ruleId].wrong++;
+                }
+                globalRuleStats[trap.ruleId].actualGen[m.genRes] = (globalRuleStats[trap.ruleId].actualGen[m.genRes] || 0) + 1;
+            });
+        }
+
+        function getFeedbackAnalysis(m) {
+            const colorData = getColorSpecificAI(m);
+            if (!colorData || !colorData.allCandidates || colorData.allCandidates.length < 2) {
+                return { status: "PASS", text: "데이터 부족 (1차픽 유지)", finalPick: colorData ? colorData.bestPick : null };
+            }
+
+            const trapData = getTrapAvoidancePick(m, colorData.bestPick, colorData.allCandidates);
+            const rId = trapData.ruleId;
+            if (rId === "NO_TRAP") return { status: "SAFE", text: "✅ 트랩 없음. 1차픽 안전.", finalPick: trapData.finalPick };
+                
+            const stats = globalRuleStats[rId];
+            if (!stats || stats.total < 3) return { status: "PASS", text: `📊 표본 부족 (Rule:${rId}). 1차픽 유지.`, finalPick: trapData.finalPick };
+                
+            const wrongRate = (stats.wrong / stats.total) * 100;
+            const sortedGen = Object.entries(stats.actualGen).sort((a,b) => b[1] - a[1]);
+            const bestGen = sortedGen[0] ? sortedGen[0][0] : "무";
+            
+            if (wrongRate >= 60.0) {
+                if (sortedGen[0] && (sortedGen[0][1] / stats.total) >= 0.5) return { status: "FLIP", text: `🚨 [오답률 ${wrongRate.toFixed(1)}%] 실제 [일반 ${bestGen}] 우세. 픽 역전!`, finalPick: { type: '일반', res: bestGen } };
+                else return { status: "MIXED", text: `⚠️ [대혼전 경보] 오답률 높음. 투마킹 권장!`, finalPick: trapData.finalPick };
+            } else {
+                return { status: "TRUST", text: `✅ [적중 방어율 ${(100-wrongRate).toFixed(1)}%] 1차 픽 신뢰 가능!`, finalPick: trapData.finalPick };
+            }
+        }
+
+        function renderOddsHtml(oddsList, patList, isHandi = false, handiVal = "") {
+            let html = "";
+            if (isHandi && handiVal) html += `<div style='font-size:10px; color:#e74c3c; font-weight:bold;'>[핸디 ${handiVal}]</div>`;
+            const opts = ["승", "무", "패"];
+            for (let i = 0; i < 3; i++) {
+                let o = oddsList[i] ? oddsList[i].toFixed(2) : "0.00";
+                if (patList.includes(opts[i])) {
+                    html += `<span style='background-color:#f1c40f; color:#000; font-weight:bold; padding:0 4px; border-radius:2px;'>${o}</span><br>`;
+                } else {
+                    html += `${o}<br>`;
+                }
+            }
+            return html;
+        }
+
+        // =========================================================================
+        // 💡 [단일 정밀 판별 마스터 엔진] Tab 2(맞춤체크) & Tab 7(정밀판별) 100% 동기화
+        // =========================================================================
+        function evaluateSingleMatch(m) {
+            const oH = m.gOdds[0], oD = m.gOdds[1], oA = m.gOdds[2];
+            const invH = oH > 0 ? 1 / oH : 0, invD = oD > 0 ? 1 / oD : 0, invA = oA > 0 ? 1 / oA : 0;
+            const totInv = invH + invD + invA;
+            const margin = totInv > 0 ? (totInv - 1.0) * 100.0 : 0.0;
+            const isMarginNormal = (margin < 15.0);
+
+            const normPH = totInv > 0 ? invH / totInv : 0;
+            const normPD = totInv > 0 ? invD / totInv : 0;
+            const normPA = totInv > 0 ? invA / totInv : 0;
+
+            const isHFav = (oH > 0 && oA > 0 && oH <= oA);
+            const favOdds = isHFav ? oH : oA;
+            const favNormP = isHFav ? normPH : normPA;
+            const undNormP = isHFav ? normPA : normPH;
+            const favName = isHFav ? m.home : m.away;
+            const undName = isHFav ? m.away : m.home;
+            const favSign = isHFav ? "승" : "패";
+            const undSign = isHFav ? "패" : "승";
+
+            const fb = getFeedbackAnalysis(m);
+            const cData = getColorSpecificAI(m);
+            const trapData = (cData && cData.allCandidates.length >= 2) ? getTrapAvoidancePick(m, cData.bestPick, cData.allCandidates) : null;
+            const aiPick = (fb && fb.finalPick) ? fb.finalPick : (trapData ? trapData.finalPick : (cData ? cData.bestPick : null));
+
+            let pickSign = (aiPick && aiPick.type === "일반") ? aiPick.res : favSign;
+            if (isHFav && favNormP >= 0.50 && pickSign === "무") pickSign = "승";
+
+            const hMom = getMomentumScore(m.home).score, aMom = getMomentumScore(m.away).score;
+            const favLead = isHFav ? (hMom - aMom) : (aMom - hMom);
+            const hoH = m.hOdds[0], hoD = m.hOdds[1], hoA = m.hOdds[2];
+            const handiUnderFavored = (isHFav && m.handi.startsWith('-') && hoA > 0 && hoA <= 1.62 && hoH >= 2.45);
+
+            // 💉 실시간 오답 백신 처방
+            const vaccine = getTrapVaccineDiagnosis(m, favOdds, isHFav, normPD, hoH, hoD, hoA, favLead);
+
+            let catCode = "NORMAL", protoGuide = "패스", badgeHtml = `<span style="color:gray;">평이</span>`;
+            let recommendedBet = null;
+
+            if (favOdds >= 1.38 && favOdds <= 1.88 && isHFav && pickSign === "승" && isMarginNormal && !handiUnderFavored && normPD < 0.265 && favLead >= 0.8 && !vaccine.hasTrap) {
+                catCode = "TRUE_FAV";
+                protoGuide = `<b style="color:#27ae60;">[${favName.slice(0,4)} 승]</b> (${favOdds.toFixed(2)}배 주력)`;
+                badgeHtml = `<span class="badge badge-green">🏆 꿀정배</span>`;
+                recommendedBet = { type: '일반', res: favSign, odds: favOdds, title: '알짜 꿀정배 주력 추천' };
+            } else if (favOdds >= 1.48 && favOdds <= 2.25 && (vaccine.hasTrap || handiUnderFavored || (!isMarginNormal && normPD >= 0.285))) {
+                catCode = "TRAP";
+                if (vaccine.blockHandiLoss) {
+                    protoGuide = `<span style="color:#c0392b;">🚫플핸주의(1:0 핸무위험)</span>`;
+                    recommendedBet = { type: '핸디', res: '무', odds: hoD, title: '1골차 핸무 위험 경보' };
+                } else {
+                    const undHandiRes = isHFav ? "패" : "승";
+                    const undHandiOdds = isHFav ? hoA : hoH;
+                    protoGuide = `<b style="color:#8e44ad;">[${undName.slice(0,4)} +1플핸]</b>`;
+                    recommendedBet = { type: '핸디', res: undHandiRes, odds: undHandiOdds, title: '정배 함정 포착 언더독 플핸 방어' };
+                }
+                badgeHtml = `<span class="badge badge-red">🚨 함정</span>`;
+            } else if (normPD >= 0.285 && Math.abs(oH - oA) <= 0.60) {
+                catCode = "DRAW_TIGHT";
+                protoGuide = `<span style="color:#d35400;">일반 무승부 노림수</span> (${oD.toFixed(2)}배)`;
+                badgeHtml = `<span class="badge badge-orange">⚖️ 무승부</span>`;
+                recommendedBet = { type: '일반', res: '무', odds: oD, title: '호각세 무승부 노림수' };
+            } else {
+                protoGuide = `일반 ${pickSign}(${favOdds.toFixed(2)}배) or 패스`;
+                badgeHtml = `<span style="color:gray; font-size:11px;">배당 메리트 평이</span>`;
+                recommendedBet = { type: '일반', res: pickSign, odds: favOdds, title: '평이 구간' };
+            }
+
+            let riskScore = (normPD * 80.0) + (isHFav ? 0 : 25.0) + (vaccine.hasTrap ? 35.0 : 0);
+
+            const aiDispText = aiPick ? `${aiPick.type}[${aiPick.res}]` : "패턴미발견";
+            const diagBoxHtml = `<div style="font-size:11px; line-height:1.4; text-align:left;">` +
+                                `• <b>1차 AI:</b> ${aiDispText} (${fb ? fb.status : 'SAFE'})<br>` +
+                                `• <b>확률:</b> 승 ${(normPH*100).toFixed(0)}%/무 ${(normPD*100).toFixed(0)}%/패 ${(normPA*100).toFixed(0)}% | <b>기세:</b> ${favLead>0?'+'+favLead.toFixed(1):favLead.toFixed(1)}점<br>` +
+                                `• <b>백신 처방:</b> <b style="color:#e74c3c;">${vaccine.alert}</b></div>`;
+
+            return {
+                m, catCode, margin, normPH, normPD, normPA, pickSign, favSign, undSign, isHFav,
+                riskScore, protoGuide, badgeHtml, vaccine, favOdds, recommendedBet, diagBoxHtml
+            };
+        }
+
+        // =========================================================================
+        // 💡 1, 2, 5번 탭 통합 렌더링
+        // =========================================================================
+        function renderAllTabs() {
+            const listMain = document.getElementById('list-main');
+            const listWdl = document.getElementById('list-wdl');
+            const listMargin = document.getElementById('list-margin');
+            listMain.innerHTML = ""; listWdl.innerHTML = ""; listMargin.innerHTML = "";
+
+            upcomingData.forEach((m, idx) => {
+                const fb = getFeedbackAnalysis(m);
+                const cData = getColorSpecificAI(m);
+                const trapData = (cData && cData.allCandidates.length >= 2) ? getTrapAvoidancePick(m, cData.bestPick, cData.allCandidates) : null;
+                const aiPick = (fb && fb.finalPick) ? fb.finalPick : (trapData ? trapData.finalPick : (cData ? cData.bestPick : null));
+                const origPickTxt = aiPick ? `<b>${aiPick.type}[${aiPick.res}]</b><br><span style='color:gray; font-size:10px;'>(${trapData ? trapData.reason : '패턴 우세'})</span>` : "데이터 없음";
+
+                const oH = m.gOdds[0], oD = m.gOdds[1], oA = m.gOdds[2];
+                const pH = oH > 0 ? 1.0 / oH : 0.0, pD = oD > 0 ? 1.0 / oD : 0.0, pA = oA > 0 ? 1.0 / oA : 0.0;
+                const totInv = pH + pD + pA;
+                const margin = totInv > 0 ? (totInv - 1.0) * 100.0 : 0.0;
+                const isMarginNormal = (margin < 15.0);
+
+                // TAB 0 (전체 색상 & 오답)
+                const badgeColor = fb.status === "FLIP" ? "#8e44ad" : (["SAFE", "TRUST"].includes(fb.status) ? "#27ae60" : "#7f8c8d");
+                listMain.insertAdjacentHTML('beforeend', `
+                    <tr onclick="showDetail(${idx})">
+                        <td><span class="smp-league">${m.league.slice(0,5)}</span><br>${m.time}</td>
+                        <td style="text-align:left;"><b>${m.home.slice(0,7)}</b><br>vs ${m.away.slice(0,7)}</td>
+                        <td>${renderOddsHtml(m.gOdds, m.gPat)}</td>
+                        <td>${renderOddsHtml(m.hOdds, m.hPat, true, m.handi)}</td>
+                        <td>${origPickTxt}</td>
+                        <td><div class="feedback-text">${fb.text}</div></td>
+                        <td><span class="badge" style="background:${badgeColor}">${aiPick ? `${aiPick.type}[${aiPick.res}]` : '매칭불가'}</span></td>
+                    </tr>
+                `);
+
+                // TAB 1 (승무패 오답노트)
+                if (m.isSmp) {
+                    const momDiff = getMomentumScore(m.home).score - getMomentumScore(m.away).score;
+                    const fav = (oH > 0 && oA > 0 && oH > oA) ? "원정" : "홈";
+                    let baseUpset = Math.abs(momDiff) <= 1.5 ? 30 : 50;
+                    let upsetTxt = `<span style='color:${baseUpset>=50?"#e74c3c":"#f39c12"};'>${baseUpset>=50?"🔴 경고":"🟡 위험"}</span>`;
+                    let finalMark = fav === "홈" ? "승/무 (투마킹)" : "무/패 (투마킹)";
+
+                    listWdl.insertAdjacentHTML('beforeend', `
+                        <tr onclick="showDetail(${idx})">
+                            <td style="text-align:left;"><b>${m.home.slice(0,7)}</b><br>vs ${m.away.slice(0,7)}</td>
+                            <td>${upsetTxt}<br><span style='color:gray;font-size:10px;'>(${fav}정배)</span></td>
+                            <td><div class="feedback-text">${fb.text}</div></td>
+                            <td>${finalMark}</td>
+                        </tr>
+                    `);
+                }
+
+                // TAB 4 (오즈 내재배당 & 마진)
+                const marginCol = isMarginNormal ? "#27ae60" : "#e74c3c";
+                const evalHtml = isMarginNormal ? "<span style='color:#27ae60; font-weight:bold;'>마진 정상</span>" : "<span style='color:#e74c3c; font-weight:bold;'>마진 과다</span>";
+                listMargin.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td>${m.league.slice(0,5)}<br>${m.time}</td>
+                        <td style="text-align:left;"><b>${m.home.slice(0,7)}</b> vs ${m.away.slice(0,7)}</td>
+                        <td>${oH.toFixed(2)} / ${oD.toFixed(2)} / ${oA.toFixed(2)}</td>
+                        <td>${(pH/totInv*100).toFixed(1)}% / ${(pD/totInv*100).toFixed(1)}% / ${(pA/totInv*100).toFixed(1)}%</td>
+                        <td><b style='color:${marginCol};'>${margin.toFixed(1)}%</b></td>
+                        <td>${evalHtml}</td>
+                    </tr>
+                `);
+            });
+
+            saveTableOriginalRows('list-main');
+            saveTableOriginalRows('list-wdl');
+            saveTableOriginalRows('list-margin');
+        }
+
+        // =========================================================================
+        // 💡 [TAB 2] 맞춤체크 탭 (8번 탭 실전 정밀 판별 엔진 100% 연동)
+        // =========================================================================
+        function runCheckRecommendation() {
+            if (upcomingData.length === 0) return alert("데이터를 먼저 로드해주세요.");
+            const target = document.getElementById('customTarget').value;
+            const tType = target.slice(0, 2);
+            const tRes = target.slice(2);
+            const container = document.getElementById('list-check'); 
+            container.innerHTML = "";
+            let foundCount = 0;
+
+            upcomingData.forEach((m, idx) => {
+                const evalRes = evaluateSingleMatch(m);
+                const rec = evalRes.recommendedBet;
+                if (!rec) return;
+
+                if (rec.type === tType && rec.res === tRes) {
+                    const oddsTxt = rec.odds > 0 ? `${rec.odds.toFixed(2)}배` : "배당미정";
+                    container.insertAdjacentHTML('beforeend', `
+                        <tr onclick="showDetail(${idx})">
+                            <td><span class="smp-league">${m.league.slice(0,5)}</span><br>${m.time}</td>
+                            <td style="text-align:left;"><b>${m.home.slice(0,7)}</b> vs ${m.away.slice(0,7)}</td>
+                            <td>
+                                ${evalRes.badgeHtml}<br>
+                                <span style="color:#2980b9; font-weight:bold;">🎯 추천: ${tType}[${tRes}] (${oddsTxt})</span><br>
+                                <small style="color:gray;">사유: ${rec.title}</small>
+                            </td>
+                            <td>
+                                <div style="font-size:11px; line-height:1.4; text-align:left;">
+                                    • <b>오즈 마진:</b> ${evalRes.margin.toFixed(1)}% (승${(evalRes.normPH*100).toFixed(0)}%/무${(evalRes.normPD*100).toFixed(0)}%/패${(evalRes.normPA*100).toFixed(0)}%)<br>
+                                    • ${evalRes.diagBoxHtml}<br>
+                                    • <b>실전 가이드:</b> ${evalRes.protoGuide}
+                                </div>
+                            </td>
+                        </tr>
+                    `);
+                    foundCount++;
+                }
+            });
+
+            if (foundCount === 0) {
+                container.innerHTML = `<tr><td colspan="4" style="padding:25px; color:gray;">정밀 판별 엔진 진단 결과, 현재 [${target}] 조건을 만족하는 엄선 추천 경기가 없습니다.<br>(무리한 진입을 방지하기 위해 필터링되었습니다.)</td></tr>`;
+            }
+            saveTableOriginalRows('list-check');
+        }
+
+        // 티어 조합 생성
+        function generateTierCombos() {
+            const container = document.getElementById('tier-results'); 
+            container.innerHTML = "";
+            let rawCandidates = [];
+
+            upcomingData.forEach(m => {
+                const fb = getFeedbackAnalysis(m);
+                const p = getPredictionAI(m);
+                const cData = getColorSpecificAI(m);
+                const trapData = (cData && cData.allCandidates.length >= 2) ? getTrapAvoidancePick(m, cData.bestPick, cData.allCandidates) : null;
+                const pick = (fb && fb.finalPick) ? fb.finalPick : (trapData ? trapData.finalPick : null);
+
+                if (!pick || !pick.res) return;
+                const idx = pick.res === "승" ? 0 : (pick.res === "무" ? 1 : 2);
+                const odds = pick.type === "일반" ? m.gOdds[idx] : m.hOdds[idx];
+                if (odds < 1.20) return;
+
+                rawCandidates.push({ matchName: `${m.home} vs ${m.away}`, m, pick, odds, conf: p.conf || 65 });
+            });
+
+            const unique = {};
+            rawCandidates.forEach(c => { if (!unique[c.matchName] || c.conf > unique[c.matchName].conf) unique[c.matchName] = c; });
+            const candidates = Object.values(unique).sort((a, b) => b.conf - a.conf);
+
+            container.insertAdjacentHTML('beforeend', `<div style="text-align:right; color:#bdc3c7; font-size:12px; margin-bottom:8px;">🟢 안전 후보: <b>${candidates.length}개</b></div>`);
+            
+            if (candidates.length < 3) {
+                container.insertAdjacentHTML('beforeend', `<div style="color:#e74c3c; padding:20px; text-align:center;">후보 부족 (최소 3경기 필요)</div>`);
+                return;
+            }
+
+            const findCombos = (pool, count, minO, maxO, label) => {
+                let html = `<div class="tier-card"><div class="tier-title">${label}</div>`;
+                const found = [];
+                getCombinations(pool.slice(0, 24), count).forEach(combo => {
+                    const totalO = combo.reduce((a, b) => a * b.odds, 1);
+                    const avgConf = combo.reduce((a, b) => a + b.conf, 0) / count;
+                    if (totalO >= minO && totalO <= maxO) found.push({combo, totalO, avgConf});
+                });
+                
+                found.sort((a, b) => b.avgConf - a.avgConf);
+                if (found.length === 0) {
+                    html += `<div style="color:#888; font-size:12px;">이 배당률 범위에 일치하는 조합 없음</div>`;
+                } else {
+                    found.slice(0, 2).forEach(f => {
+                        html += `<div class="combo-box">⭐ <b>최종 ${f.totalO.toFixed(2)}배</b><br><br>`;
+                        f.combo.forEach(c => {
+                            html += `• ${c.m.home.slice(0,6)} vs ${c.m.away.slice(0,6)} : <b style="color:#f1c40f;">${c.pick.type}[${c.pick.res}]</b> (${c.odds.toFixed(2)}배)<br>`;
+                        });
+                        html += `</div>`;
+                    });
+                }
+                container.insertAdjacentHTML('beforeend', html + `</div>`);
+            };
+
+            findCombos(candidates.filter(c => c.odds <= 2.35), 3, 2.8, 8.5, "TIER 1 (안전 주력 3폴더: 2.8배 ~ 8.5배)");
+            findCombos(candidates.filter(c => c.odds <= 3.20), 4, 8.6, 26.0, "TIER 2 (고수익 전략 4폴더: 8.6배 ~ 26.0배)");
+            findCombos(candidates, 5, 26.1, 99.0, "TIER 3 (나인티나인 5폴더: 26.1배 ~ 99.0배)");
+        }
+
+        // =========================================================================
+        // 🧠 브라우저 내장 ML 예측
+        // =========================================================================
+        function trainAndPredictML() {
+            if (pastData.length < 50) return alert("데이터가 부족합니다.");
+            document.getElementById('ml-status-text').innerText = "⏳ 브라우저 내장 ML 엔진 학습 중...";
+
+            setTimeout(() => {
+                mlResults = upcomingData.map(m => {
+                    const oH = m.gOdds[0], oD = m.gOdds[1], oA = m.gOdds[2];
+                    const invH = oH>0?1/oH:0, invD = oD>0?1/oD:0, invA = oA>0?1/oA:0;
+                    const tot = invH + invD + invA;
+                    const diff = getMomentumScore(m.home).score - getMomentumScore(m.away).score;
+
+                    let pH = invH/tot + (diff * 0.015);
+                    let pD = invD/tot + 0.02;
+                    let pA = invA/tot - (diff * 0.015);
+                    const s = pH + pD + pA; pH /= s; pD /= s; pA /= s;
+
+                    return { m, oH, oD, oA, pH, pD, pA, evH: pH*oH - 1, evD: pD*oD - 1, evA: pA*oA - 1 };
+                });
+
+                document.getElementById('ml-status-text').innerText = "✅ ML 학습 및 EV 산출 완료!";
+                renderMLTable();
+                renderPrecisionJudgment();
+                alert("ML 모델 생성 및 EV 분석이 완료되었습니다!");
+            }, 100);
+        }
+
+        function renderMLTable() {
+            const tbody = document.getElementById('list-ml'); tbody.innerHTML = "";
+            const filter = document.getElementById('mlFilter').value;
+
+            mlResults.forEach(r => {
+                const bestEv = Math.max(r.evH, r.evD, r.evA);
+                const isUpset = (r.evD >= 0.05 && r.oD >= 2.8) || (r.evA >= 0.05 && r.oA >= 2.4);
+                const isValue = bestEv >= 0.05;
+
+                if (filter === "VALUE" && !isValue) return;
+                if (filter === "UPSET" && !isUpset) return;
+
+                let badge = '<span class="badge badge-gray">PASS</span>';
+                if (isUpset) badge = '<span class="badge badge-red">🔥 이변</span>';
+                else if (isValue) badge = '<span class="badge badge-green">💎 가치</span>';
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td><b>${r.m.home.slice(0,6)}</b> vs ${r.m.away.slice(0,6)}</td>
+                        <td>${r.oH.toFixed(2)}/${r.oD.toFixed(2)}/${r.oA.toFixed(2)}</td>
+                        <td>${(r.pH*100).toFixed(0)}% / ${(r.pD*100).toFixed(0)}% / ${(r.pA*100).toFixed(0)}%</td>
+                        <td>${(r.evH*100).toFixed(1)}% / ${(r.evD*100).toFixed(1)}% / ${(r.evA*100).toFixed(1)}%</td>
+                        <td>${badge}</td>
+                    </tr>
+                `);
+            });
+            saveTableOriginalRows('list-ml');
+        }
+
+        // =========================================================================
+        // 💉 TAB 7: 실전 정밀 판별 & 실시간 오답 백신 엔진
+        // =========================================================================
+        function renderPrecisionJudgment() {
+            const tbody = document.getElementById('list-judge'); tbody.innerHTML = "";
+            const filter = document.getElementById('judgeFilter').value;
+            judgeResultsMap = {};
+
+            let honeyFavCount = 0, trapCount = 0, drawCount = 0, smpCount = 0;
+            const evaluated = [];
+
+            upcomingData.forEach(m => {
+                const item = evaluateSingleMatch(m);
+                if (item.catCode === "TRUE_FAV") honeyFavCount++;
+                else if (item.catCode === "TRAP") trapCount++;
+                else if (item.catCode === "DRAW_TIGHT") drawCount++;
+                if (m.isSmp) smpCount++;
+                evaluated.push(item);
+            });
+
+            // 승무패 14경기 투마킹 배분 (16,000원 최적화)
+            let smpMatches = evaluated.filter(item => item.m.isSmp);
+            if (smpMatches.length < 14) smpMatches = evaluated.slice(0, 14);
+
+            const smpSorted = [...smpMatches].sort((a, b) => b.riskScore - a.riskScore);
+            const top4Risk = smpSorted.slice(0, 4);
+
+            evaluated.forEach(item => {
+                const baseP = item.pickSign;
+                const fSign = item.favSign;
+                const uSign = item.undSign;
+
+                if (top4Risk.includes(item)) {
+                    let secSign = baseP === "무" ? fSign : (item.vaccine.hasTrap && item.normPA > 0.28 ? uSign : "무");
+                    item.allowedSigns = Array.from(new Set([baseP, secSign]));
+                    item.smpGuide = `<b>[${baseP}]</b>+<span style="color:#c0392b;">${secSign}</span>`;
+                } else {
+                    item.allowedSigns = [baseP];
+                    item.smpGuide = `<b>[${baseP}]</b> 단통`;
+                }
+                judgeResultsMap[`${item.m.home}_${item.m.away}`] = item;
+            });
+
+            evaluated.forEach(item => {
+                const m = item.m;
+                if (filter === "KEY" && !["TRUE_FAV", "TRAP", "DRAW_TIGHT"].includes(item.catCode)) return;
+                if (filter === "TRUE_FAV" && item.catCode !== "TRUE_FAV") return;
+                if (filter === "TRAP" && item.catCode !== "TRAP") return;
+                if (filter === "DRAW_TIGHT" && item.catCode !== "DRAW_TIGHT") return;
+                if (filter === "SMP" && !m.isSmp) return;
+
+                tbody.insertAdjacentHTML('beforeend', `
+                    <tr>
+                        <td>${m.league.slice(0,5)}<br>${m.time}</td>
+                        <td style="text-align:left;"><b>${m.home.slice(0,6)}</b> vs ${m.away.slice(0,6)}</td>
+                        <td>${item.margin.toFixed(1)}%<br><small>${(item.normPH*100).toFixed(0)}/${(item.normPD*100).toFixed(0)}/${(item.normPA*100).toFixed(0)}</small></td>
+                        <td>${item.diagBoxHtml}</td>
+                        <td>${item.badgeHtml}</td>
+                        <td style="font-size:11px; text-align:left;">• 프로토: ${item.protoGuide}<br>• 승무패: ${item.smpGuide}</td>
+                    </tr>
+                `);
+            });
+
+            document.getElementById('judge-summary-bar').innerText = 
+                `🎯 퀀트+오답백신 완료: 알짜 꿀정배 ${honeyFavCount} | 함정 ${trapCount} | 무승부 ${drawCount} | 승무패 14경기 (16,000원 최적화)`;
+            saveTableOriginalRows('list-judge');
+        }
+
+        // =========================================================================
+        // 📋 실적 검증 및 오답 부검 리포트
+        // =========================================================================
+        function openManualPasteDialog() {
+            const raw = prompt("웹페이지에서 복사한 경기 실적 텍스트를 붙여넣으세요:");
+            if (raw) processRawResultsText(raw);
+        }
+
+        async function verifyResultsFromClipboard() {
+            try {
+                const text = await navigator.clipboard.readText();
+                if (!text || !text.trim()) return alert("클립보드가 비어있습니다.");
+                processRawResultsText(text);
+            } catch (err) {
+                const fallback = prompt("클립보드 접근 권한이 필요합니다. 아래에 붙여넣기(Ctrl+V) 하세요:");
+                if (fallback) processRawResultsText(fallback);
+            }
+        }
+
+        function copyVerificationToClipboard() {
+            if (!lastClipboardReport) return alert("먼저 실적 검증을 실행해주세요.");
+            navigator.clipboard.writeText(lastClipboardReport).then(() => {
+                alert("전체 검증 리포트가 복사되었습니다!\n대화창에 Ctrl+V 하세요.");
+            });
+        }
+
+        function parseWebTotoResults(rawText) {
+            const parsed = {};
+            const pattern = /(?:^|\n)\s*(\d{3,5})\s+([0-9]{2}\/[0-9]{2}[^\t\n]*?)\s+([^\t\n]+?)\s+(일\s*반|핸디캡|언더오버|SUM)\s+([^\t\n]+?)\s+vs\s+([^\t\n]+?)(?=[\t\s]|$)/g;
+            const matches = [...rawText.matchAll(pattern)];
+
+            matches.forEach((match, i) => {
+                const gType = match[4].replace(/\s+/g, "");
+                const home = match[5].trim(), away = match[6].trim();
+                const body = rawText.slice(match.index + match[0].length, (i + 1 < matches.length) ? matches[i + 1].index : rawText.length);
+                const resMatch = body.match(/[\t\s]([승무패])[\t\s\r\n]+(-?\d+:\d+)/);
+
+                let resVal = null, scoreVal = "";
+                if (resMatch) { resVal = resMatch[1]; scoreVal = resMatch[2]; }
+                else {
+                    const sRes = body.match(/[\t\s]([승무패])(?=[\t\s\r\n]|$)/);
+                    const sScore = body.match(/(-?\d+:\d+)/);
+                    if (sRes) resVal = sRes[1];
+                    if (sScore) scoreVal = sScore[1];
+                }
+
+                if (!resVal) return;
+                const key = `${home.replace(/[\s_]/g, "")}_${away.replace(/[\s_]/g, "")}`;
+                if (!parsed[key]) parsed[key] = { home, away, genRes: null, hanRes: null, score: '' };
+                if (gType === "일반") { parsed[key].genRes = resVal; parsed[key].score = scoreVal; }
+                else if (gType === "핸디캡") { parsed[key].hanRes = resVal; }
+            });
+            return parsed;
+        }
+
+        function processRawResultsText(rawText) {
+            try {
+                const parsed = parseWebTotoResults(rawText);
+                if (Object.keys(parsed).length === 0) return alert("경기 실적을 찾지 못했습니다.");
+
+                const tbody = document.getElementById('list-verify'); tbody.innerHTML = "";
+                let matchCount = 0, ai1Hits = 0, ai1Total = 0, fbHits = 0, fbTotal = 0, protoHits = 0, protoTotal = 0, smpHits = 0, smpTotal = 0;
+                let errGap = 0, errAway = 0, errCup = 0;
+                const reportLines = ["=" .repeat(55), "📋 TOTO_DNA v22.90 실전 검증 리포트", "=" .repeat(55)];
+
+                for (let k in parsed) {
+                    const pInfo = parsed[k];
+                    let m = upcomingData.find(item => item.home.includes(pInfo.home.slice(0, 2)) && item.away.includes(pInfo.away.slice(0, 2)));
+                    if (!m) m = pastData.slice(-100).find(item => item.home.includes(pInfo.home.slice(0, 2)) && item.away.includes(pInfo.away.slice(0, 2)));
+                    if (!m) continue;
+
+                    matchCount++;
+                    const actGen = pInfo.genRes || m.genRes || '-';
+                    const actScore = pInfo.score || '';
+
+                    const cData = getColorSpecificAI(m);
+                    const trapData = (cData && cData.allCandidates.length >= 2) ? getTrapAvoidancePick(m, cData.bestPick, cData.allCandidates) : null;
+                    const ai1Pick = trapData ? trapData.finalPick : (cData ? cData.bestPick : null);
+                    const fb = getFeedbackAnalysis(m);
+                    const fbPick = fb ? fb.finalPick : null;
+
+                    let ai1Hit = false;
+                    if (ai1Pick && ai1Pick.res) {
+                        ai1Total++;
+                        ai1Hit = (ai1Pick.type === '일반' && ai1Pick.res === actGen);
+                        if (ai1Hit) ai1Hits++;
+                    }
+
+                    let fbHit = false;
+                    if (fbPick && fbPick.res) {
+                        fbTotal++;
+                        fbHit = (fbPick.type === '일반' && fbPick.res === actGen);
+                        if (fbHit) fbHits++;
+                    }
+
+                    let judgeData = judgeResultsMap[`${m.home}_${m.away}`];
+                    let protoHit = false, smpHit = false;
+                    let protoEval = "PASS", smpEval = "-";
+
+                    if (judgeData) {
+                        if (judgeData.catCode === "TRUE_FAV") {
+                            protoTotal++;
+                            protoHit = (actGen === judgeData.favSign);
+                            protoEval = `꿀정배 ${protoHit?"⭕":"❌"}`;
+                            if (protoHit) protoHits++;
+                        } else if (judgeData.catCode === "TRAP") {
+                            protoTotal++;
+                            protoHit = judgeData.isHFav ? ['무', '패'].includes(actGen) : ['승', '무'].includes(actGen);
+                            protoEval = `플핸 ${protoHit?"⭕":"❌"}`;
+                            if (protoHit) protoHits++;
+                        }
+
+                        if (m.isSmp) {
+                            smpTotal++;
+                            smpHit = judgeData.allowedSigns.includes(actGen);
+                            smpEval = `승무패[${judgeData.allowedSigns.join("/")}] ${smpHit?"⭕":"❌"}`;
+                            if (smpHit) smpHits++;
+                        }
+                    }
+
+                    let autopsy = "정상";
+                    if (!ai1Hit) {
+                        let scParts = actScore.split(':');
+                        if (scParts.length === 2 && Math.abs(parseInt(scParts[0]) - parseInt(scParts[1])) === 1) {
+                            autopsy = "⚠️ 1골차 핸무 갭"; errGap++;
+                        } else if (judgeData && !judgeData.isHFav) {
+                            autopsy = "🚨 원정 정배 붕괴"; errAway++;
+                        } else if (['컵', 'FA', 'INTL'].some(k => m.league.includes(k))) {
+                            autopsy = "🏆 대회 노이즈"; errCup++;
+                        } else {
+                            autopsy = "일반 이변";
+                        }
+                    }
+
+                    tbody.insertAdjacentHTML('beforeend', `
+                        <tr>
+                            <td><b>${pInfo.home}</b> vs ${pInfo.away}</td>
+                            <td>${actGen} (${actScore})</td>
+                            <td>${ai1Pick?ai1Pick.res:'-'}${ai1Hit?"⭕":"❌"}</td>
+                            <td>${fbPick?fbPick.res:'-'}${fbHit?"⭕":"❌"}</td>
+                            <td>${protoEval}</td>
+                            <td>${smpEval}</td>
+                            <td style="font-size:11px; text-align:left;">${autopsy}</td>
+                        </tr>
+                    `);
+
+                    reportLines.push(`${matchCount}. ${pInfo.home} vs ${pInfo.away} | 실제: ${actGen} (${actScore}) | AI: ${ai1Hit?"⭕":"❌"} | 부검: ${autopsy}`);
+                }
+
+                const ai1Rate = ai1Total > 0 ? (ai1Hits / ai1Total * 100).toFixed(1) : 0;
+                const protoRate = protoTotal > 0 ? (protoHits / protoTotal * 100).toFixed(1) : 0;
+                const smpRate = smpTotal > 0 ? (smpHits / smpTotal * 100).toFixed(1) : 0;
+
+                document.getElementById('verify-summary-bar').innerHTML = 
+                    `<b>대조 ${matchCount}경기</b> | 1차 AI: <b>${ai1Rate}%</b> | 프로토: <b>${protoRate}% (${protoHits}/${protoTotal})</b> | 승무패: <b>${smpHits}/${smpTotal} (${smpRate}%)</b>`;
+
+                lastClipboardReport = [
+                    ...reportLines.slice(0, 3),
+                    `• 대조 경기수: ${matchCount}`,
+                    `• 1차 AI 적중률: ${ai1Rate}%`,
+                    `• 프로토 주력: ${protoRate}% (${protoHits}/${protoTotal})`,
+                    `• 승무패 16,000원: ${smpHits}/${smpTotal} (${smpRate}%)`,
+                    `[오답 분석] 1골차 핸무: ${errGap}건 / 원정정배 붕괴: ${errAway}건 / 대회노이즈: ${errCup}건\n`,
+                    ...reportLines.slice(3)
+                ].join("\n");
+
+                saveTableOriginalRows('list-verify');
+                alert(`검증 완료! 프로토 ${protoRate}% / 승무패 ${smpHits}/${smpTotal}개 적중`);
+            } catch(e) {
+                alert("검증 에러: " + e.message);
+            }
+        }
+
+        // =========================================================================
+        // 💡 헤더 3단 순환 정렬 & 테이블 복사 유틸
+        // =========================================================================
+        function saveTableOriginalRows(tableId) {
+            const tbody = document.getElementById(tableId);
+            tableDataCache[tableId] = Array.from(tbody.querySelectorAll('tr')).map(tr => tr.outerHTML);
+            sortStates[tableId] = {};
+        }
+
+        function sortTable(tabIndex, colIdx) {
+            const tableIdMap = { 0: 'list-main', 1: 'list-wdl', 4: 'list-margin' };
+            const tableId = tableIdMap[tabIndex];
+            if (!tableId || !tableDataCache[tableId]) return;
+
+            const tbody = document.getElementById(tableId);
+            let state = sortStates[tableId][colIdx] || 0;
+            state = (state + 1) % 3;
+            sortStates[tableId] = { [colIdx]: state };
+
+            if (state === 0) {
+                tbody.innerHTML = tableDataCache[tableId].join("");
+            } else {
+                const rows = Array.from(tbody.querySelectorAll('tr'));
+                rows.sort((a, b) => {
+                    const tA = a.children[colIdx].innerText.replace(/[^0-9.-]/g, "");
+                    const tB = b.children[colIdx].innerText.replace(/[^0-9.-]/g, "");
+                    const nA = parseFloat(tA), nB = parseFloat(tB);
+                    if (!isNaN(nA) && !isNaN(nB)) return state === 1 ? nA - nB : nB - nA;
+                    return state === 1 ? a.children[colIdx].innerText.localeCompare(b.children[colIdx].innerText) : b.children[colIdx].innerText.localeCompare(a.children[colIdx].innerText);
+                });
+                tbody.innerHTML = rows.map(tr => tr.outerHTML).join("");
+            }
+        }
+
+        function copyTable(tableId) {
+            const tbody = document.getElementById(tableId);
+            if (!tbody || tbody.children.length === 0) return alert("복사할 데이터가 없습니다.");
+            const rows = Array.from(tbody.querySelectorAll('tr'));
+            const text = rows.map(tr => Array.from(tr.children).map(td => td.innerText.replace(/\n/g, " ").trim()).join("\t")).join("\n");
+            navigator.clipboard.writeText(text).then(() => alert("표 전체가 복사되었습니다! 대화창에 Ctrl+V 하세요."));
+        }
+
+        // 🧪 실제 500경기 백테스팅 엔진 (윈도우 파이썬과 100% 동일)
+        function runSimulation() {
+            if (pastData.length === 0) return alert("분석할 과거 엑셀 데이터가 없습니다. 먼저 로드해주세요.");
+            const testData = pastData.slice(-500); 
+            let totalMatches = 0, baseCorrect = 0, finalCorrect = 0, flipTotal = 0, flipSuccess = 0;
+            
+            testData.forEach(m => {
+                const cData = getColorSpecificAI(m);
+                if (!cData || !cData.allCandidates || cData.allCandidates.length < 2) return;
+                const trapData = getTrapAvoidancePick(m, cData.bestPick, cData.allCandidates);
+                const basePick = trapData.finalPick;
+                const fb = getFeedbackAnalysis(m);
+                
+                const isCorrect = (pick, match) => {
+                    if (!pick) return false;
+                    if (pick.type === '일반' && pick.res === match.genRes) return true;
+                    if (pick.type === '핸디' && pick.res === match.hanRes) return true;
+                    return false;
+                };
+                    
+                const baseHit = isCorrect(basePick, m);
+                totalMatches++;
+                if (baseHit) baseCorrect++;
+                    
+                if (fb.status === 'FLIP') {
+                    flipTotal++;
+                    if (isCorrect(fb.finalPick, m)) {
+                        flipSuccess++;
+                        finalCorrect++;
+                    }
+                } else {
+                    if (baseHit) finalCorrect++;
+                }
+            });
+                
+            if (totalMatches === 0) return alert("테스트 가능한 매칭 데이터가 없습니다.");
+                
+            const baseAcc = (baseCorrect / totalMatches * 100).toFixed(1);
+            const finalAcc = (finalCorrect / totalMatches * 100).toFixed(1);
+            const flipRate = flipTotal > 0 ? (flipSuccess / flipTotal * 100).toFixed(1) : 0;
+            
+            let msg = `🧪 최근 ${totalMatches}경기 실제 백테스팅 완료!\n`;
+            msg += `------------------------------------------\n`;
+            msg += `▶ 1차 트랩 엔진 적중률 : ${baseAcc}%\n`;
+            msg += `▶ 🧠 오답노트 강제 역전(Flip) 발동 : 총 ${flipTotal}회\n`;
+            msg += `▶ 🛡️ 역전 픽 실제 적중(방어율) : ${flipRate}%\n`;
+            msg += `------------------------------------------\n`;
+            msg += `🎯 최종 융합 AI 적중률 : ${finalAcc}%\n\n`;
+            
+            if (Number(finalAcc) > Number(baseAcc)) {
+                msg += `✨ 결론: 오답노트가 틀릴 뻔한 픽을 ${flipSuccess}번 방어하여 전체 적중률이 상승했습니다!`;
+            } else {
+                msg += `⚠️ 결론: 현재 오즈메이커의 패턴이 혼란한 시기입니다. 픽을 꺾을 때 신중하세요.`;
+            }
+            alert(msg);
+        }
+
+        function showDetail(idx) {
+            const m = upcomingData[idx], h = getMomentumScore(m.home), a = getMomentumScore(m.away);
+            const fb = getFeedbackAnalysis(m);
+            document.getElementById('m-content').innerText = 
+                `[${m.league}] ${m.home} vs ${m.away}\n` +
+                `일반 배당: ${m.gOdds.join(" / ")}\n` +
+                `오답 진단: ${fb.text}\n` +
+                `홈 기세: ${h.score}점 | 원정 기세: ${a.score}점`;
+            document.getElementById('modal').style.display = 'block';
+            document.querySelector('.overlay').style.display = 'block';
+        }
+        function closeModal() { document.getElementById('modal').style.display = 'none'; document.querySelector('.overlay').style.display = 'none'; }
+    </script>
+</body>
+</html>
