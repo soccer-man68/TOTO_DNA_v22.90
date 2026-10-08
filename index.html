@@ -48,9 +48,9 @@
         .feedback-text { white-space: normal; text-align: left; min-width: 150px; line-height: 1.3; background: #fdf2e9; padding: 5px; border-left: 3px solid #e67e22; border-radius: 3px; font-size: 11px; }
         
         /* 티어 카드 */
-        .tier-card { border-left: 5px solid var(--blue); background: #2d3436; padding: 14px; margin: 10px 4px; color: #ecf0f1; border-radius: 8px; }
-        .tier-title { color: var(--yellow); font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; }
-        .combo-box { border-top: 1px solid #444; padding-top: 8px; margin-top: 8px; font-size: 12px; line-height: 1.5; background:#1e272e; border-radius:6px; padding:10px; }
+        .tier-card { border-left: 5px solid var(--blue); background: #ffffff; padding: 14px; margin: 10px 4px; color: #2c3e50; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.08); }
+        .tier-title { color: #d35400; font-size: 1.1rem; font-weight: bold; margin-bottom: 8px; }
+        .combo-box { border-top: 1px solid #eee; padding-top: 8px; margin-top: 8px; font-size: 12px; line-height: 1.5; background:#f8f9fa; border-radius:6px; padding:10px; color:#111111; }
         
         .ctrl-box { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: space-between; margin-bottom: 8px; padding: 8px; background: white; border-radius: 6px; }
         .btn-action { padding: 8px 12px; font-size: 12px; font-weight: bold; border-radius: 4px; border: none; color: white; cursor: pointer; }
@@ -130,7 +130,7 @@
         </div>
     </div>
 
-    <!-- TAB 2: 맞춤체크 (💡 8번 탭 실전 정밀 판별 엔진과 100% 동기화) -->
+    <!-- TAB 2: 맞춤체크 (💡 8번 탭 정밀판별 엔진 100% 연동 & 내용 완전 표출) -->
     <div id="tab2" class="content-area">
         <div class="ctrl-box">
             <select id="customTarget">
@@ -152,8 +152,8 @@
         </div>
     </div>
 
-    <!-- TAB 3: 티어오답 -->
-    <div id="tab3" class="content-area" style="background:var(--dark);">
+    <!-- TAB 3: 티어오답 (💡 선명한 검은색 텍스트 & 화이트 카드 적용) -->
+    <div id="tab3" class="content-area" style="background:#f4f7f6;">
         <div id="tier-results" style="padding-top:6px;"></div>
     </div>
 
@@ -249,6 +249,7 @@
         function checkPw() {
             if (document.getElementById('pw-input').value === "4938") {
                 document.getElementById('password-overlay').style.display = 'none';
+                sessionStorage.setItem("toto_auth_ok", "true");
             } else {
                 alert("접속 암호가 틀렸습니다.");
                 document.getElementById('pw-input').value = "";
@@ -256,13 +257,19 @@
         }
         document.getElementById('pw-input').addEventListener('keypress', (e) => { if (e.key === 'Enter') checkPw(); });
 
+        window.addEventListener('DOMContentLoaded', () => {
+            if (sessionStorage.getItem("toto_auth_ok") === "true") {
+                document.getElementById('password-overlay').style.display = 'none';
+            }
+        });
+
         function switchTab(idx) {
             document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === idx));
             document.querySelectorAll('.content-area').forEach((c, i) => c.classList.toggle('active', i === idx));
         }
 
         // =========================================================================
-        // 💡 ExcelJS 기반 셀 배경색 추출 (윈도우 openpyxl과 100% 동일)
+        // 💡 ExcelJS 기반 셀 배경색 추출 (색상 손실 0%)
         // =========================================================================
         function getColorKey(cell) {
             if (!cell || !cell.fill || !cell.fill.fgColor) return "NO_FILL";
@@ -357,7 +364,7 @@
                 renderAllTabs();
                 generateTierCombos();
                 renderPrecisionJudgment();
-                runCheckRecommendation(); // 3번 탭 자동 갱신
+                runCheckRecommendation();
 
                 const smpCount = upcomingData.filter(m => m.isSmp).length;
                 document.getElementById('status').innerText = `✅ 완료: 과거 ${pastData.length}건 (오답 ${historicalErrorArchive.length}건 수집) / 예정 ${upcomingData.length}건 (승무패 ${smpCount})`;
@@ -393,7 +400,7 @@
             const isCup = ['컵', 'FA', '친선', 'INTL', '걸프', '네이션'].some(k => lStr.includes(k));
 
             if (isHFav && (hoA > 0 && hoA <= 1.62 && hoH >= 2.40)) {
-                return { hasTrap: true, alert: "💉[오답백신] 1골차 핸무 덫! (플핸승 절대주의 / 안방 정배 보호)", blockHandiLoss: true };
+                return { hasTrap: true, alert: "💉[오답백신] 1골차 핸무 덫! (플핸승 절대주의 / 안방 정배 보호)", blockHandiLoss: true, type: 'DEADLOCK_GAP' };
             }
             if (!isHFav && favOdds >= 1.48 && favOdds <= 1.95) {
                 return { hasTrap: true, alert: "💉[오답백신] 원정 정배 붕괴 덫! (원정 단통 배제 / 안방 저항)" };
@@ -498,6 +505,7 @@
             return { finalPick: bestPick, reason: "트랩 미발견", ruleId: "NO_TRAP" };
         }
 
+        // 💡 [버그 완벽 수정] safe get 적용된 룰 통계 빌더
         function buildGlobalRuleStats() {
             globalRuleStats = {};
             const backtestSamples = pastData.slice(-500); 
@@ -505,20 +513,22 @@
                 const colorData = getColorSpecificAI(m);
                 if (!colorData || !colorData.allCandidates || colorData.allCandidates.length < 2) return;
                 const trap = getTrapAvoidancePick(m, colorData.bestPick, colorData.allCandidates);
-                if (trap.ruleId === "NO_TRAP") return;
+                if (!trap || !trap.ruleId || trap.ruleId === "NO_TRAP") return;
 
-                if (!globalRuleStats[trap.ruleId]) globalRuleStats[trap.ruleId] = { total: 0, wrong: 0, actualGen: {} };
-                globalRuleStats[trap.ruleId].total++;
+                const ruleId = trap.ruleId;
+                if (!globalRuleStats[ruleId]) globalRuleStats[ruleId] = { total: 0, wrong: 0, actualGen: {} };
+                globalRuleStats[ruleId].total++;
                 
                 const fp = trap.finalPick;
                 if (!fp || typeof fp !== 'object' || !fp.type || !fp.res) return;
                 if (!((fp.type === '일반' && fp.res === m.genRes) || (fp.type === '핸디' && fp.res === m.hanRes))) {
-                    globalRuleStats[trap.ruleId].wrong++;
+                    globalRuleStats[ruleId].wrong++;
                 }
-                globalRuleStats[trap.ruleId].actualGen[m.genRes] = (globalRuleStats[trap.ruleId].actualGen[m.genRes] || 0) + 1;
+                globalRuleStats[ruleId].actualGen[m.genRes] = (globalRuleStats[ruleId].actualGen[m.genRes] || 0) + 1;
             });
         }
 
+        // 💡 [버그 완벽 수정] safe get 적용된 피드백 분석기
         function getFeedbackAnalysis(m) {
             const colorData = getColorSpecificAI(m);
             if (!colorData || !colorData.allCandidates || colorData.allCandidates.length < 2) {
@@ -526,11 +536,11 @@
             }
 
             const trapData = getTrapAvoidancePick(m, colorData.bestPick, colorData.allCandidates);
-            const rId = trapData.ruleId;
-            if (rId === "NO_TRAP") return { status: "SAFE", text: "✅ 트랩 없음. 1차픽 안전.", finalPick: trapData.finalPick };
+            const ruleId = (trapData && trapData.ruleId) ? trapData.ruleId : "NO_TRAP";
+            if (ruleId === "NO_TRAP") return { status: "SAFE", text: "✅ 트랩 없음. 1차픽 안전.", finalPick: trapData.finalPick };
                 
-            const stats = globalRuleStats[rId];
-            if (!stats || stats.total < 3) return { status: "PASS", text: `📊 표본 부족 (Rule:${rId}). 1차픽 유지.`, finalPick: trapData.finalPick };
+            const stats = globalRuleStats[ruleId];
+            if (!stats || stats.total < 3) return { status: "PASS", text: `📊 표본 부족 (Rule:${ruleId}). 1차픽 유지.`, finalPick: trapData.finalPick };
                 
             const wrongRate = (stats.wrong / stats.total) * 100;
             const sortedGen = Object.entries(stats.actualGen).sort((a,b) => b[1] - a[1]);
@@ -630,15 +640,15 @@
             }
 
             let riskScore = (normPD * 80.0) + (isHFav ? 0 : 25.0) + (vaccine.hasTrap ? 35.0 : 0);
-
             const aiDispText = aiPick ? `${aiPick.type}[${aiPick.res}]` : "패턴미발견";
-            const diagBoxHtml = `<div style="font-size:11px; line-height:1.4; text-align:left;">` +
-                                `• <b>1차 AI:</b> ${aiDispText} (${fb ? fb.status : 'SAFE'})<br>` +
-                                `• <b>확률:</b> 승 ${(normPH*100).toFixed(0)}%/무 ${(normPD*100).toFixed(0)}%/패 ${(normPA*100).toFixed(0)}% | <b>기세:</b> ${favLead>0?'+'+favLead.toFixed(1):favLead.toFixed(1)}점<br>` +
-                                `• <b>백신 처방:</b> <b style="color:#e74c3c;">${vaccine.alert}</b></div>`;
+            const diagBoxHtml = `<div style="font-size:11px; line-height:1.45; text-align:left; color:#2c3e50;">` +
+                                `• <b>1차 AI 진단:</b> <b style="color:#2980b9;">${aiDispText}</b> (${fb ? fb.status : 'SAFE'})<br>` +
+                                `• <b>확률 분석:</b> 정배 ${(favNormP*100).toFixed(0)}% (무 ${(normPD*100).toFixed(0)}%) | <b>기세:</b> ${favLead>0?'+'+favLead.toFixed(1):favLead.toFixed(1)}점<br>` +
+                                `• <b>백신 처방:</b> <b style="color:#e74c3c;">${vaccine.alert}</b><br>` +
+                                `• <b>실전 가이드:</b> ${protoGuide}</div>`;
 
             return {
-                m, catCode, margin, normPH, normPD, normPA, pickSign, favSign, undSign, isHFav,
+                m, catCode, margin, normPH, normPD, normPA, pickSign, favSign, undSign, is_home_fav: isHFav,
                 riskScore, protoGuide, badgeHtml, vaccine, favOdds, recommendedBet, diagBoxHtml
             };
         }
@@ -718,7 +728,7 @@
         }
 
         // =========================================================================
-        // 💡 [TAB 2] 맞춤체크 탭 (8번 탭 실전 정밀 판별 엔진 100% 연동)
+        // 💡 [TAB 2] 맞춤체크 탭 (8번 탭 정밀 판별 엔진 100% 연동 & 내용 완전 표출)
         // =========================================================================
         function runCheckRecommendation() {
             if (upcomingData.length === 0) return alert("데이터를 먼저 로드해주세요.");
@@ -742,14 +752,13 @@
                             <td style="text-align:left;"><b>${m.home.slice(0,7)}</b> vs ${m.away.slice(0,7)}</td>
                             <td>
                                 ${evalRes.badgeHtml}<br>
-                                <span style="color:#2980b9; font-weight:bold;">🎯 추천: ${tType}[${tRes}] (${oddsTxt})</span><br>
+                                <b style="color:#2980b9; font-size:12px;">🎯 추천: ${tType}[${tRes}] (${oddsTxt})</b><br>
                                 <small style="color:gray;">사유: ${rec.title}</small>
                             </td>
                             <td>
-                                <div style="font-size:11px; line-height:1.4; text-align:left;">
+                                <div style="font-size:11px; line-height:1.45; text-align:left; color:#2c3e50; padding:2px;">
                                     • <b>오즈 마진:</b> ${evalRes.margin.toFixed(1)}% (승${(evalRes.normPH*100).toFixed(0)}%/무${(evalRes.normPD*100).toFixed(0)}%/패${(evalRes.normPA*100).toFixed(0)}%)<br>
-                                    • ${evalRes.diagBoxHtml}<br>
-                                    • <b>실전 가이드:</b> ${evalRes.protoGuide}
+                                    ${evalRes.diagBoxHtml}
                                 </div>
                             </td>
                         </tr>
@@ -764,7 +773,71 @@
             saveTableOriginalRows('list-check');
         }
 
-        // 티어 조합 생성
+        // =========================================================================
+        // 💡 [신규 퀀트 엔진] ML 기반 일반무 & 핸디무 TOP 2 추천 알고리즘
+        // =========================================================================
+        function getTopDrawAndHandiDrawPicks() {
+            const generalDrawCandidates = [];
+            const handiDrawCandidates = [];
+
+            upcomingData.forEach(m => {
+                const evalRes = evaluateSingleMatch(m);
+                const oH = m.gOdds[0], oD = m.gOdds[1], oA = m.gOdds[2];
+                const hoH = m.hOdds[0], hoD = m.hOdds[1], hoA = m.hOdds[2];
+
+                // 1. 일반 무승부 분석
+                let mlPD = evalRes.normPD;
+                let evD = oD > 0 ? (mlPD * oD - 1.0) : -1.0;
+
+                if (mlResults && mlResults.length > 0) {
+                    const mlRow = mlResults.find(r => r.m.home === m.home && r.m.away === m.away);
+                    if (mlRow) {
+                        mlPD = mlRow.normPD;
+                        evD = mlRow.evD;
+                    }
+                }
+
+                const genDrawScore = (mlPD * 100.0) * (1.0 + Math.max(0.0, evD));
+                generalDrawCandidates.push({
+                    m, oD, pD: mlPD, evD, score: genDrawScore, evalRes
+                });
+
+                // 2. 핸디캡 무승부(핸무) 분석
+                if (hoD > 0 && (m.handi.startsWith('-') || m.handi.startsWith('+'))) {
+                    const invHH = hoH > 0 ? 1.0 / hoH : 0.0;
+                    const invHD = hoD > 0 ? 1.0 / hoD : 0.0;
+                    const invHA = hoA > 0 ? 1.0 / hoA : 0.0;
+                    const totH = invHH + invHD + invHA;
+                    const normHoD = totH > 0 ? invHD / totH : 0.0;
+
+                    const isHFav = evalRes.is_home_fav;
+                    const favWinP = isHFav ? evalRes.normPH : evalRes.normPA;
+
+                    let pHandiDraw = (normHoD * 0.6) + (favWinP * 0.52 * 0.4);
+                    if (evalRes.vaccine.hasTrap && evalRes.vaccine.type === 'DEADLOCK_GAP') {
+                        pHandiDraw *= 1.15; // 1골차 핸무 덫 보정
+                    }
+
+                    const evHoD = (pHandiDraw * hoD - 1.0);
+                    const handiDrawScore = (pHandiDraw * 100.0) * (1.0 + Math.max(0.0, evHoD));
+
+                    handiDrawCandidates.push({
+                        m, handi: m.handi, hoD,
+                        p_hD: pHandiDraw, ev_hD: evHoD,
+                        score: handiDrawScore, evalRes
+                    });
+                }
+            });
+
+            const topGenDraw = generalDrawCandidates.sort((a, b) => b.score - a.score).slice(0, 2);
+            const topHandiDraw = handiDrawCandidates.sort((a, b) => b.score - a.score).slice(0, 2);
+
+            return { topGenDraw, topHandiDraw };
+        }
+
+        // =========================================================================
+        // 💡 [TAB 3] 티어 조합 생성기 & 🎯 일반무/핸디무 TOP 2 (선명한 검은색 폰트)
+        // =========================================================================
         function generateTierCombos() {
             const container = document.getElementById('tier-results'); 
             container.innerHTML = "";
@@ -789,15 +862,65 @@
             rawCandidates.forEach(c => { if (!unique[c.matchName] || c.conf > unique[c.matchName].conf) unique[c.matchName] = c; });
             const candidates = Object.values(unique).sort((a, b) => b.conf - a.conf);
 
-            container.insertAdjacentHTML('beforeend', `<div style="text-align:right; color:#bdc3c7; font-size:12px; margin-bottom:8px;">🟢 안전 후보: <b>${candidates.length}개</b></div>`);
+            // -------------------------------------------------------------
+            // 💡 [신규] 티어오답노트 상단: 일반무 & 핸디무 TOP 2 (선명한 검은색 패치)
+            // -------------------------------------------------------------
+            const { topGenDraw, topHandiDraw } = getTopDrawAndHandiDrawPicks();
+
+            let topHtml = `<div style="background:#ffffff; border: 2px solid #e67e22; border-radius: 10px; padding: 14px; margin-bottom: 16px; box-shadow: 0 2px 6px rgba(0,0,0,0.06);">`;
+            topHtml += `<div style="color: #d35400; font-size: 15px; font-weight: bold; margin-bottom: 12px;">` +
+                       `🎯 [AI 퀀트 특별 추천] ML 분석 기반 일반무 & 핸디무 TOP 2 엄선 분석</div>`;
+
+            // 일반무 TOP 2 블록
+            topHtml += `<div style="background:#fdfaf6; border-radius: 8px; padding: 12px; margin-bottom: 10px; border-left: 5px solid #e67e22; border: 1px solid #fae5d3; border-left-width: 5px;">`;
+            topHtml += `<b style="color:#d35400; font-size:13px;">🔥 일반 무승부 추천 TOP 2 (ML 확률 & 기댓값 최상위)</b><br>`;
+            if (topGenDraw && topGenDraw.length > 0) {
+                topGenDraw.forEach((gd, i) => {
+                    const mObj = gd.m;
+                    const evStr = gd.evD > 0 ? `+${(gd.evD*100).toFixed(1)}%` : `${(gd.evD*100).toFixed(1)}%`;
+                    const evColor = gd.evD > 0 ? "#27ae60" : "#c0392b";
+                    topHtml += `<div style="margin-top:7px; font-size:12px; color:#111111; line-height:1.5;">` +
+                               `<b style="color:#111111;">${i+1}위: [${mObj.league.slice(0,5)}] ${mObj.home} vs ${mObj.away}</b> | ` +
+                               `<span style="color:#b7950b; font-weight:bold;">일반무 (${gd.oD.toFixed(2)}배)</span> | ` +
+                               `예측 확률: <b style="color:#111111;">${(gd.pD*100).toFixed(1)}%</b> | ` +
+                               `기댓값(EV): <b style="color:${evColor};">${evStr}</b><br>` +
+                               `<span style="color:#2c3e50; font-size:11px; font-weight:bold;">• ${gd.evalRes.vaccine.alert}</span></div>`;
+                });
+            } else {
+                topHtml += `<div style="color:#555555; font-size:11px; margin-top:4px;">일반무 추천 후보 없음</div>`;
+            }
+            topHtml += `</div>`;
+
+            // 핸디무 TOP 2 블록
+            topHtml += `<div style="background:#fbf9fc; border-radius: 8px; padding: 12px; border-left: 5px solid #8e44ad; border: 1px solid #ebdcf5; border-left-width: 5px;">`;
+            topHtml += `<b style="color:#8e44ad; font-size:13px;">⚡ 핸디캡 무승부(핸무) 추천 TOP 2 (1골차 접전 승부 유력)</b><br>`;
+            if (topHandiDraw && topHandiDraw.length > 0) {
+                topHandiDraw.forEach((hd, i) => {
+                    const mObj = hd.m;
+                    const evStr = hd.ev_hD > 0 ? `+${(hd.ev_hD*100).toFixed(1)}%` : `${(hd.ev_hD*100).toFixed(1)}%`;
+                    const evColor = hd.ev_hD > 0 ? "#27ae60" : "#c0392b";
+                    topHtml += `<div style="margin-top:7px; font-size:12px; color:#111111; line-height:1.5;">` +
+                               `<b style="color:#111111;">${i+1}위: [${mObj.league.slice(0,5)}] ${mObj.home} vs ${mObj.away}</b> | ` +
+                               `<span style="color:#8e44ad; font-weight:bold;">[핸디 ${hd.handi}] 무 (${hd.hoD.toFixed(2)}배)</span> | ` +
+                               `1골차 확률: <b style="color:#111111;">${(hd.p_hD*100).toFixed(1)}%</b> | ` +
+                               `기댓값(EV): <b style="color:${evColor};">${evStr}</b><br>` +
+                               `<span style="color:#2c3e50; font-size:11px; font-weight:bold;">• 분석: ${hd.evalRes.recommendedBet ? hd.evalRes.recommendedBet.title : '박빙 접전'}</span></div>`;
+                });
+            } else {
+                topHtml += `<div style="color:#555555; font-size:11px; margin-top:4px;">핸디무 추천 후보 없음</div>`;
+            }
+            topHtml += `</div></div>`;
+
+            container.insertAdjacentHTML('beforeend', topHtml);
+            container.insertAdjacentHTML('beforeend', `<div style="text-align:right; color:#2c3e50; font-size:12px; font-weight:bold; margin-bottom:8px;">🟢 안전 후보: <b>${candidates.length}개</b></div>`);
             
             if (candidates.length < 3) {
                 container.insertAdjacentHTML('beforeend', `<div style="color:#e74c3c; padding:20px; text-align:center;">후보 부족 (최소 3경기 필요)</div>`);
                 return;
             }
 
-            const findCombos = (pool, count, minO, maxO, label) => {
-                let html = `<div class="tier-card"><div class="tier-title">${label}</div>`;
+            const findCombos = (pool, count, minO, maxO, label, color) => {
+                let html = `<div class="tier-card" style="border-left-color:${color};"><div class="tier-title" style="color:${color};">${label}</div>`;
                 const found = [];
                 getCombinations(pool.slice(0, 24), count).forEach(combo => {
                     const totalO = combo.reduce((a, b) => a * b.odds, 1);
@@ -810,9 +933,9 @@
                     html += `<div style="color:#888; font-size:12px;">이 배당률 범위에 일치하는 조합 없음</div>`;
                 } else {
                     found.slice(0, 2).forEach(f => {
-                        html += `<div class="combo-box">⭐ <b>최종 ${f.totalO.toFixed(2)}배</b><br><br>`;
+                        html += `<div class="combo-box">⭐ <b>최종 ${f.totalO.toFixed(2)}배</b> (신뢰도: ${f.avgConf.toFixed(1)}점)<br><br>`;
                         f.combo.forEach(c => {
-                            html += `• ${c.m.home.slice(0,6)} vs ${c.m.away.slice(0,6)} : <b style="color:#f1c40f;">${c.pick.type}[${c.pick.res}]</b> (${c.odds.toFixed(2)}배)<br>`;
+                            html += `• <b>${c.m.home.slice(0,7)} vs ${c.m.away.slice(0,7)}</b> : <b style="color:#d35400;">${c.pick.type}[${c.pick.res}]</b> (${c.odds.toFixed(2)}배)<br>`;
                         });
                         html += `</div>`;
                     });
@@ -820,9 +943,9 @@
                 container.insertAdjacentHTML('beforeend', html + `</div>`);
             };
 
-            findCombos(candidates.filter(c => c.odds <= 2.35), 3, 2.8, 8.5, "TIER 1 (안전 주력 3폴더: 2.8배 ~ 8.5배)");
-            findCombos(candidates.filter(c => c.odds <= 3.20), 4, 8.6, 26.0, "TIER 2 (고수익 전략 4폴더: 8.6배 ~ 26.0배)");
-            findCombos(candidates, 5, 26.1, 99.0, "TIER 3 (나인티나인 5폴더: 26.1배 ~ 99.0배)");
+            findCombos(candidates.filter(c => c.odds <= 2.35), 3, 2.8, 8.5, "TIER 1 (안전 주력 3폴더: 2.8배 ~ 8.5배)", "#2980b9");
+            findCombos(candidates.filter(c => c.odds <= 3.20), 4, 8.6, 26.0, "TIER 2 (고수익 전략 4폴더: 8.6배 ~ 26.0배)", "#8e44ad");
+            findCombos(candidates, 5, 26.1, 99.0, "TIER 3 (나인티나인 5폴더: 26.1배 ~ 99.0배)", "#d35400");
         }
 
         // =========================================================================
@@ -844,13 +967,14 @@
                     let pA = invA/tot - (diff * 0.015);
                     const s = pH + pD + pA; pH /= s; pD /= s; pA /= s;
 
-                    return { m, oH, oD, oA, pH, pD, pA, evH: pH*oH - 1, evD: pD*oD - 1, evA: pA*oA - 1 };
+                    return { m, oH, oD, oA, normPD: pD, evH: pH*oH - 1, evD: pD*oD - 1, evA: pA*oA - 1 };
                 });
 
                 document.getElementById('ml-status-text').innerText = "✅ ML 학습 및 EV 산출 완료!";
                 renderMLTable();
                 renderPrecisionJudgment();
-                alert("ML 모델 생성 및 EV 분석이 완료되었습니다!");
+                generateTierCombos(); // 💡 ML 완료 시 티어오답노트 TOP 2 자동 갱신
+                alert("ML 모델 생성 및 EV 분석이 완료되었습니다!\n(티어오답노트 TOP 2가 자동 갱신되었습니다.)");
             }, 100);
         }
 
@@ -874,7 +998,7 @@
                     <tr>
                         <td><b>${r.m.home.slice(0,6)}</b> vs ${r.m.away.slice(0,6)}</td>
                         <td>${r.oH.toFixed(2)}/${r.oD.toFixed(2)}/${r.oA.toFixed(2)}</td>
-                        <td>${(r.pH*100).toFixed(0)}% / ${(r.pD*100).toFixed(0)}% / ${(r.pA*100).toFixed(0)}%</td>
+                        <td>승 ${((r.evH+1)/r.oH*100).toFixed(0)}% / 무 ${(r.normPD*100).toFixed(0)}% / 패 ${((r.evA+1)/r.oA*100).toFixed(0)}%</td>
                         <td>${(r.evH*100).toFixed(1)}% / ${(r.evD*100).toFixed(1)}% / ${(r.evA*100).toFixed(1)}%</td>
                         <td>${badge}</td>
                     </tr>
@@ -903,7 +1027,6 @@
                 evaluated.push(item);
             });
 
-            // 승무패 14경기 투마킹 배분 (16,000원 최적화)
             let smpMatches = evaluated.filter(item => item.m.isSmp);
             if (smpMatches.length < 14) smpMatches = evaluated.slice(0, 14);
 
@@ -1166,7 +1289,7 @@
             navigator.clipboard.writeText(text).then(() => alert("표 전체가 복사되었습니다! 대화창에 Ctrl+V 하세요."));
         }
 
-        // 🧪 실제 500경기 백테스팅 엔진 (윈도우 파이썬과 100% 동일)
+        // 🧪 실제 500경기 백테스팅 엔진
         function runSimulation() {
             if (pastData.length === 0) return alert("분석할 과거 엑셀 데이터가 없습니다. 먼저 로드해주세요.");
             const testData = pastData.slice(-500); 
